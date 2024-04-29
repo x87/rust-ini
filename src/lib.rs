@@ -79,7 +79,7 @@ pub enum EscapePolicy {
     /// This will escape emoji - if you want them to remain raw, use BasicsUnicode instead.
     BasicsUnicodeExtended,
     /// Escape reserved symbols.
-    /// This includes everything in EscapePolicy::Basics, plus the comment characters ';' and '#' and the key/value-separating characters '=' and ':'.
+    /// This includes everything in EscapePolicy::Basics, plus the comment characters ';' and '#' and the key/value-separating character '='.
     Reserved,
     /// Escape reserved symbols and non-ASCII characters in the BMP.
     /// Codepoints above U+FFFF, e.g. '🐱' U+1F431 "CAT FACE" will *not* be escaped!
@@ -130,7 +130,7 @@ impl EscapePolicy {
             // A single backslash, must be escaped
             // ASCII control characters, U+0000 NUL..= U+001F UNIT SEPARATOR, or U+007F DELETE. The same as char::is_ascii_control()
             '\\' | '\x00'..='\x1f' | '\x7f' => self.escape_basics(),
-            ';' | '#' | '=' | ':' => self.escape_reserved(),
+            ';' | '#' | '=' => self.escape_reserved(),
             '\u{0080}'..='\u{FFFF}' => self.escape_unicode(),
             '\u{10000}'..='\u{10FFFF}' => self.escape_unicode_extended(),
             _ => false,
@@ -1334,7 +1334,7 @@ impl<'a> Parser<'a> {
                     }
                     Err(e) => return Err(e),
                 },
-                '=' | ':' => {
+                '=' => {
                     if (curkey[..]).is_empty() {
                         return self.error("missing key");
                     }
@@ -1498,7 +1498,7 @@ impl<'a> Parser<'a> {
     }
 
     fn parse_key(&mut self) -> Result<String, ParseError> {
-        self.parse_str_until(&[Some('='), Some(':')], false)
+        self.parse_str_until(&[Some('=')], false)
     }
 
     fn parse_val(&mut self) -> Result<String, ParseError> {
